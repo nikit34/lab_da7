@@ -67,7 +67,7 @@ void TrickyBackpack::GenerateMatrix()
         {
             if (s >= this->data_weight[k - 1])
             {
-                if (this->answer[k - 1][s].data * this->answer[k - 1][s].num <= (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * (this->answer[k - 1][s - data_weight[k - 1]].num + 1))
+                if (this->answer[k - 1][s].data * std::abs(this->answer[k - 1][s].num) <= (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * std::abs(this->answer[k - 1][s - data_weight[k - 1]].num) + 1)
                 {
                     this->answer[k][s].data = (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]);
                     this->answer[k][s].num = this->answer[k - 1][s - data_weight[k - 1]].num + 1;
@@ -117,7 +117,7 @@ void TrickyBackpack::PrintResponse()
     int answer_size = this->answer.size();
     int answer_path_size = this->answer_path.size();
 
-    std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].num << std::endl;
+    std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * std::abs(this->answer[answer_size - 1][this->answer[answer_size - 1].size()) - 1].num << std::endl;
 
     if (answer_path_size > 0)
     {
