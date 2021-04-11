@@ -54,13 +54,13 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
     for (int k = 0; k < this->count; ++k) {
         for (int s = 1; s <= this->weight; ++s) {
-            if (s >= thing_item.weight[k]) {
+            if (s >= thing_item.weight[k + 1]) {
                 if (
                     this->answer[k][s].data * this->answer[k][s].num <=
-                    (this->answer[k][s - thing_item.weight[k]].data + thing_item.cost[k]) * (this->answer[k][s - thing_item.weight[k]].num + 1)
+                    (this->answer[k][s - thing_item.weight[k + 1]].data + thing_item.cost[k + 1]) * (this->answer[k][s - thing_item.weight[k + 1]].num + 1)
                     ) {
-                    this->answer[k + 1][s].data = (this->answer[k][s - thing_item.weight[k]].data + thing_item.cost[k]);
-                    this->answer[k + 1][s].num = this->answer[k][s - thing_item.weight[k]].num + 1;
+                    this->answer[k + 1][s].data = this->answer[k][s - thing_item.weight[k + 1]].data + thing_item.cost[k + 1];
+                    this->answer[k + 1][s].num = this->answer[k][s - thing_item.weight[k + 1]].num + 1;
                 }
                 else {
                     this->answer[k + 1][s].data = this->answer[k][s].data;
@@ -90,7 +90,7 @@ void TrickyBackpack::FindPath(int count, int weight, struct thing& thing_item, s
     if (this->answer[count - 1][weight].data == this->answer[count][weight].data)
         FindPath(count - 1, weight, thing_item, answer_path);
     else {
-        FindPath(count - 1, weight - thing_item.weight[count - 1], thing_item, answer_path);
+        FindPath(count - 1, weight - thing_item.weight[count], thing_item, answer_path);
         answer_path.push_back(count);
     }
 }
