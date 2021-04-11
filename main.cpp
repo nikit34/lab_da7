@@ -31,19 +31,19 @@ private:
 };
 
 TrickyBackpack::TrickyBackpack(int& count, int& weight) {
-    this->count = count + 1;
+    this->count = count;
     this->weight = weight + 1;
 
     element next_element;
     std::vector<element> next_vector(this->weight, next_element);
-    this->answer.resize(this->count, next_vector);
+    this->answer.resize(this->count + 1, next_vector);
 }
 
 void TrickyBackpack::PutData(struct thing& thing_item) {
     int one_weight;
     int one_cost;
 
-    for (int i = 0; i < this->count - 1; ++i) {
+    for (int i = 0; i < this->count; ++i) {
         std::cin >> one_weight >> one_cost;
 
         thing_item.weight.push_back(one_weight);
@@ -52,24 +52,24 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 }
 
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
-    for (int k = 1; k < this->count; ++k) {
+    for (int k = 0; k < this->count; ++k) {
         for (int s = 1; s < this->weight; ++s) {
-            if (s >= thing_item.weight[k - 1]) {
+            if (s >= thing_item.weight[k]) {
                 if (
-                    this->answer[k - 1][s].data * this->answer[k - 1][s].num <=
-                    (this->answer[k - 1][s - thing_item.weight[k - 1]].data + thing_item.cost[k - 1]) * (this->answer[k - 1][s - thing_item.weight[k - 1]].num + 1)
+                    this->answer[k][s].data * this->answer[k][s].num <=
+                    (this->answer[k][s - thing_item.weight[k]].data + thing_item.cost[k]) * (this->answer[k][s - thing_item.weight[k]].num + 1)
                     ) {
-                    this->answer[k][s].data = (this->answer[k - 1][s - thing_item.weight[k - 1]].data + thing_item.cost[k - 1]);
-                    this->answer[k][s].num = this->answer[k - 1][s - thing_item.weight[k - 1]].num + 1;
+                    this->answer[k + 1][s].data = (this->answer[k][s - thing_item.weight[k]].data + thing_item.cost[k]);
+                    this->answer[k + 1][s].num = this->answer[k][s - thing_item.weight[k]].num + 1;
                 }
                 else {
-                    this->answer[k][s].data = this->answer[k - 1][s].data;
-                    this->answer[k][s].num = this->answer[k - 1][s].num;
+                    this->answer[k + 1][s].data = this->answer[k][s].data;
+                    this->answer[k + 1][s].num = this->answer[k][s].num;
                 }
             }
             else {
-                this->answer[k][s].data = this->answer[k - 1][s].data;
-                this->answer[k][s].num = this->answer[k - 1][s].num;
+                this->answer[k + 1][s].data = this->answer[k][s].data;
+                this->answer[k + 1][s].num = this->answer[k][s].num;
             }
         }
     }
