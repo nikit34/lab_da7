@@ -64,13 +64,20 @@ void TrickyBackpack::GenerateMatrix(struct data* init_data){
                     this->answer[k][s].num = this->answer[k - 1][s - init_data->weight[k - 1]].num + 1;
                 }
                 else {
-                    this->answer[k][s].data = this->answer[k - 1][s].data;
-                    this->answer[k][s].num = this->answer[k - 1][s].num;
+                    this->answer[k + 1][s + this->data_weight[k + 1]].data = this->answer[k + 1][s + this->data_weight[k + 1]].data;
+                    this->answer[k + 1][s + this->data_weight[k + 1]].num = this->answer[k + 1][s + this->data_weight[k + 1]].num;
                 }
             }
             else {
-                this->answer[k][s].data = this->answer[k - 1][s].data;
-                this->answer[k][s].num = this->answer[k - 1][s].num;
+                if (this->answer[k + 1][s].data * this->answer[k + 1][s].num <=
+                    this->answer[k][s].data * this->answer[k][s].num
+                ) {
+                    this->answer[k][s].data = this->answer[k][s].data;
+                    this->answer[k][s].num = this->answer[k][s].num;
+                } else {
+                    this->answer[k + 1][s].data = this->answer[k + 1][s].data;
+                    this->answer[k + 1][s].num = this->answer[k + 1][s].num;
+                }
             }
         }
     }
@@ -113,7 +120,6 @@ void TrickyBackpack::PrintResponse() {
 int main(){
     int count;
     int weight;
-
     std::cin >> count >> weight;
     TrickyBackpack bag(count + 1, weight + 1);
     
