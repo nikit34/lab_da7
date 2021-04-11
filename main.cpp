@@ -32,14 +32,9 @@ TrickyBackpack::TrickyBackpack(int &&count, int &&weight) {
     this->count = count;
     this->weight = weight;
 
-    std::vector<element> next_vector;
     element next_element;
-
-    next_vector.resize(this->weight, next_element);
-    for (int i = 0; i < this->count; ++i)
-    {
-        this->answer.push_back(next_vector);
-    }
+    std::vector<element> next_vector(this->weight, next_element);
+    this->answer.resize(this->count, next_vector);
 }
 
 void TrickyBackpack::PutData() {
