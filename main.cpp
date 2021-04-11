@@ -6,20 +6,23 @@ struct element {
     int num = 0;
 };
 
+struct data {
+    std::vector<int> weight;
+    std::vector<int> cost;
+};
+
 class TrickyBackpack {
 public:
     TrickyBackpack(int &&count, int &&weight);
     ~TrickyBackpack() {}
 
-    void PutData();
-    void GenerateMatrix();
-    void FindPath(int count, int weight);
+    void PutData(struct data *init_data);
+    void GenerateMatrix(struct data* init_data);
+    void FindPath(int count, int weight, struct data* init_data);
     void PrintResponse();
     void PrintState();
 
 private:
-    std::vector<int> data_weight;
-    std::vector<int> data_cost;
 
     int weight;
     int count;
@@ -37,28 +40,28 @@ TrickyBackpack::TrickyBackpack(int &&count, int &&weight) {
     this->answer.resize(this->count, next_vector);
 }
 
-void TrickyBackpack::PutData() {
+void TrickyBackpack::PutData(struct data *init_data) {
     int one_weight;
     int one_cost;
 
     for (int i = 0; i < this->count - 1; ++i) {
         std::cin >> one_weight >> one_cost;
 
-        this->data_weight.push_back(one_weight);
-        this->data_cost.push_back(one_cost);
+        init_data->weight.push_back(one_weight);
+        init_data->cost.push_back(one_cost);
     }
 }
 
-void TrickyBackpack::GenerateMatrix(){
+void TrickyBackpack::GenerateMatrix(struct data* init_data){
     for (int k = 1; k < this->count; ++k) {
         for (int s = 1; s < this->weight; ++s) {
-            if (s >= this->data_weight[k - 1]) {
+            if (s >= init_data->weight[k - 1]) {
                 if (
                     this->answer[k - 1][s].data * this->answer[k - 1][s].num <=
-                    (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * (this->answer[k - 1][s - data_weight[k - 1]].num + 1)
+                    (this->answer[k - 1][s - init_data->weight[k - 1]].data + init_data->cost[k - 1]) * (this->answer[k - 1][s - init_data->weight[k - 1]].num + 1)
                 ) {
-                    this->answer[k][s].data = (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]);
-                    this->answer[k][s].num = this->answer[k - 1][s - data_weight[k - 1]].num + 1;
+                    this->answer[k][s].data = (this->answer[k - 1][s - init_data->weight[k - 1]].data + init_data->cost[k - 1]);
+                    this->answer[k][s].num = this->answer[k - 1][s - init_data->weight[k - 1]].num + 1;
                 }
                 else {
                     this->answer[k][s].data = this->answer[k - 1][s].data;
@@ -82,13 +85,13 @@ void TrickyBackpack::PrintState() {
     }
 }
 
-void TrickyBackpack::FindPath(int count, int weight) {
+void TrickyBackpack::FindPath(int count, int weight, struct data* init_data) {
     if (this->answer[count][weight].data == 0)
         return;
     if (this->answer[count - 1][weight].data == this->answer[count][weight].data)
-        FindPath(count - 1, weight);
+        FindPath(count - 1, weight, init_data);
     else {
-        FindPath(count - 1, weight - this->data_weight[count - 1]);
+        FindPath(count - 1, weight - init_data->weight[count - 1], init_data);
         this->answer_path.push_back(count);
     }
 }
@@ -113,9 +116,11 @@ int main(){
 
     std::cin >> count >> weight;
     TrickyBackpack bag(count + 1, weight + 1);
-    bag.PutData();
-    bag.GenerateMatrix();
-    bag.FindPath(count, weight);
+    
+    struct data init_data;
+    bag.PutData(&init_data);
+    bag.GenerateMatrix(&init_data);
+    bag.FindPath(count, weight, &init_data);
     bag.PrintResponse();
     return 0;
 }
