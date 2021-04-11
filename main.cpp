@@ -50,24 +50,31 @@ void TrickyBackpack::PutData() {
 }
 
 void TrickyBackpack::GenerateMatrix(){
-    for (int k = 1; k < this->count; ++k) {
-        for (int s = 1; s < this->weight; ++s) {
-            if (s >= this->data_weight[k - 1]) {
+    for (int k = 0; k < this->count; ++k) {
+        for (int s = 0; s <= this->weight; ++s) {
+            if (s + this->data_weight[k + 1] <= this->weight) {
                 if (
-                    this->answer[k - 1][s].data * this->answer[k - 1][s].num <=
-                    (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * (this->answer[k - 1][s - data_weight[k - 1]].num + 1)
+                    this->answer[k + 1][s + this->data_weight[k + 1]].data * this->answer[k + 1][s + this->data_weight[k + 1]].num <=
+                    (this->answer[k][s].data + data_cost[k + 1]) * (this->answer[k][s].num + 1)
                 ) {
-                    this->answer[k][s].data = (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]);
-                    this->answer[k][s].num = this->answer[k - 1][s - data_weight[k - 1]].num + 1;
+                    this->answer[k + 1][s + this->data_weight[k + 1]].data = this->answer[k][s].data + data_cost[k + 1];
+                    this->answer[k + 1][s + this->data_weight[k + 1]].num = this->answer[k][s].num + 1;
                 }
                 else {
-                    this->answer[k][s].data = this->answer[k - 1][s].data;
-                    this->answer[k][s].num = this->answer[k - 1][s].num;
+                    this->answer[k + 1][s + this->data_weight[k + 1]].data = this->answer[k + 1][s + this->data_weight[k + 1]].data;
+                    this->answer[k + 1][s + this->data_weight[k + 1]].num = this->answer[k + 1][s + this->data_weight[k + 1]].num;
                 }
             }
             else {
-                this->answer[k][s].data = this->answer[k - 1][s].data;
-                this->answer[k][s].num = this->answer[k - 1][s].num;
+                if (this->answer[k + 1][s].data * this->answer[k + 1][s].num <=
+                    this->answer[k][s].data * this->answer[k][s].num
+                ) {
+                    this->answer[k][s].data = this->answer[k][s].data;
+                    this->answer[k][s].num = this->answer[k][s].num;
+                } else {
+                    this->answer[k + 1][s].data = this->answer[k + 1][s].data;
+                    this->answer[k + 1][s].num = this->answer[k + 1][s].num;
+                }
             }
         }
     }
@@ -110,7 +117,6 @@ void TrickyBackpack::PrintResponse() {
 int main(){
     int count;
     int weight;
-
     std::cin >> count >> weight;
     TrickyBackpack bag(count + 1, weight + 1);
     bag.PutData();
