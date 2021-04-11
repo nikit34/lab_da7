@@ -32,10 +32,10 @@ private:
 
 TrickyBackpack::TrickyBackpack(int& count, int& weight) {
     this->count = count;
-    this->weight = weight + 1;
+    this->weight = weight;
 
     element next_element;
-    std::vector<element> next_vector(this->weight, next_element);
+    std::vector<element> next_vector(this->weight + 1, next_element);
     this->answer.resize(this->count + 1, next_vector);
 }
 
@@ -53,7 +53,7 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
     for (int k = 0; k < this->count; ++k) {
-        for (int s = 1; s < this->weight; ++s) {
+        for (int s = 1; s <= this->weight; ++s) {
             if (s >= thing_item.weight[k]) {
                 if (
                     this->answer[k][s].data * this->answer[k][s].num <=
