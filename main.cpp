@@ -1,14 +1,12 @@
 #include <iostream>
 #include <vector>
 
-struct element
-{
+struct element {
     int data = 0;
     int num = 0;
 };
 
-class TrickyBackpack
-{
+class TrickyBackpack {
 public:
     TrickyBackpack(int &&count, int &&weight);
     ~TrickyBackpack() {}
@@ -30,8 +28,7 @@ private:
     std::vector<int> answer_path;
 };
 
-TrickyBackpack::TrickyBackpack(int &&count, int &&weight)
-{
+TrickyBackpack::TrickyBackpack(int &&count, int &&weight) {
     this->count = count;
     this->weight = weight;
 
@@ -45,13 +42,11 @@ TrickyBackpack::TrickyBackpack(int &&count, int &&weight)
     }
 }
 
-void TrickyBackpack::PutData()
-{
+void TrickyBackpack::PutData() {
     int one_weight;
     int one_cost;
 
-    for (int i = 0; i < this->count - 1; ++i)
-    {
+    for (int i = 0; i < this->count - 1; ++i) {
         std::cin >> one_weight >> one_cost;
 
         this->data_weight.push_back(one_weight);
@@ -59,27 +54,23 @@ void TrickyBackpack::PutData()
     }
 }
 
-void TrickyBackpack::GenerateMatrix()
-{
-    for (int k = 1; k < this->count; ++k)
-    {
-        for (int s = 1; s < this->weight; ++s)
-        {
-            if (s >= this->data_weight[k - 1])
-            {
-                if (this->answer[k - 1][s].data * std::abs(this->answer[k - 1][s].num) <= (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * (std::abs(this->answer[k - 1][s - data_weight[k - 1]].num) + 1))
-                {
+void TrickyBackpack::GenerateMatrix(){
+    for (int k = 1; k < this->count; ++k) {
+        for (int s = 1; s < this->weight; ++s) {
+            if (s >= this->data_weight[k - 1]) {
+                if (
+                    this->answer[k - 1][s].data * this->answer[k - 1][s].num <=
+                    (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]) * (this->answer[k - 1][s - data_weight[k - 1]].num + 1)
+                ) {
                     this->answer[k][s].data = (this->answer[k - 1][s - data_weight[k - 1]].data + data_cost[k - 1]);
                     this->answer[k][s].num = this->answer[k - 1][s - data_weight[k - 1]].num + 1;
                 }
-                else
-                {
+                else {
                     this->answer[k][s].data = this->answer[k - 1][s].data;
                     this->answer[k][s].num = this->answer[k - 1][s].num;
                 }
             }
-            else
-            {
+            else {
                 this->answer[k][s].data = this->answer[k - 1][s].data;
                 this->answer[k][s].num = this->answer[k - 1][s].num;
             }
@@ -87,50 +78,41 @@ void TrickyBackpack::GenerateMatrix()
     }
 }
 
-void TrickyBackpack::PrintState()
-{
-    for (int i = 0; i < this->answer.size(); ++i)
-    {
-        for (int j = 0; j < this->answer[i].size(); ++j)
-        {
+void TrickyBackpack::PrintState() {
+    for (int i = 0; i < this->answer.size(); ++i) {
+        for (int j = 0; j < this->answer[i].size(); ++j){
             std::cout << this->answer[i][j].data << " ";
         }
         std::cout << std::endl;
     }
 }
 
-void TrickyBackpack::FindPath(int count, int weight)
-{
+void TrickyBackpack::FindPath(int count, int weight) {
     if (this->answer[count][weight].data == 0)
         return;
     if (this->answer[count - 1][weight].data == this->answer[count][weight].data)
         FindPath(count - 1, weight);
-    else
-    {
+    else {
         FindPath(count - 1, weight - this->data_weight[count - 1]);
         this->answer_path.push_back(count);
     }
 }
 
-void TrickyBackpack::PrintResponse()
-{
+void TrickyBackpack::PrintResponse() {
     int answer_size = this->answer.size();
     int answer_path_size = this->answer_path.size();
 
-    std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * std::abs(this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].num) << std::endl;
+    std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].num << std::endl;
 
-    if (answer_path_size > 0)
-    {
-        for (int i = 0; i < answer_path_size - 1; i++)
-        {
+    if (answer_path_size > 0) {
+        for (int i = 0; i < answer_path_size - 1; i++) {
             std::cout << this->answer_path[i] << " ";
         }
         std::cout << this->answer_path[answer_path_size - 1] << std::endl;
     }
 }
 
-int main()
-{
+int main(){
     int count;
     int weight;
 
