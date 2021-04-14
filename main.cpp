@@ -52,7 +52,7 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 }
 
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
-    for (int k = 0; k < this->count; ++k) {
+    for (int k = 0; k < this->count - 1; ++k) {
         for (int s = 1; s <= this->weight; ++s) {
             if (s >= thing_item.weight[k + 1]) {
                 if (
@@ -96,8 +96,8 @@ void TrickyBackpack::FindPath(int count, int weight, struct thing& thing_item, s
 }
 
 void TrickyBackpack::PrintResponse(std::vector<int>& answer_path) {
-    int answer_size = this->answer.size();
-    int answer_path_size = answer_path.size();
+    unsigned long answer_size = this->answer.size();
+    unsigned long answer_path_size = answer_path.size();
 
     std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].num << std::endl;
 
@@ -123,6 +123,9 @@ int main() {
 
     std::vector<int> answer_path;
     bag.FindPath(count, weight, thing_item, answer_path);
+    
+    bag.PrintState();
+    
     bag.PrintResponse(answer_path);
     return 0;
 }
