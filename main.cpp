@@ -1,15 +1,13 @@
 #include <iostream>
 #include <vector>
 
-struct element {  // TODO: ???
-    int data = 0;
-    int num = 0;
-};
 
 struct thing {
     std::vector<int> weight;
     std::vector<int> cost;
 };
+
+static const int MAX_COUNT = 100;
 
 class TrickyBackpack {
 public:
@@ -18,25 +16,38 @@ public:
 
     void PutData(struct thing& thing_item);
     void GenerateMatrix(struct thing& thing_item);
-    void FindPath(int count, int weight, struct thing& thing_item, std::vector<int>& answer_path);
-    void PrintResponse(std::vector<int>& answer_path);
-    void PrintState();
+
+    void PrintResponse();
 
 private:
 
     int weight;
     int count;
 
-    std::vector<std::vector<element> > answer;
+    std::vector<std::vector<int> > total;
+    std::vector<std::vector<int> > total_more;
+
+    std::vector<std::vector<std::vector<bool> > > mask;
+    std::vector<std::vector<std::vector<bool> > > mask_more;
+
+    std::vector<bool> take;
+    int answer;
 };
 
-TrickyBackpack::TrickyBackpack(int& count, int& weight) {
+TrickyBackpack::TrickyBackpack(int& count, int& weight) : take(MAX_COUNT, false) {
     this->count = count;
     this->weight = weight;
 
-    element next_element;
-    std::vector<element> next_vector(this->weight + 1, next_element);
-    this->answer.resize(this->count + 1, next_vector);
+    std::vector<int> tmp(this->weight + 1);
+    this->total.resize(this->count + 1, tmp);
+    this->total_more.resize(this->count + 1, tmp);
+
+    std::vector< std::vector<bool> > tmp_vector_bool;
+    tmp_vector_bool.resize(this->weight + 1, this->take);
+    this->mask.resize(this->count + 1, tmp_vector_bool);
+    this->mask_more.resize(this->count + 1, tmp_vector_bool);
+
+    this->answer = 0;
 }
 
 void TrickyBackpack::PutData(struct thing& thing_item) {
@@ -52,61 +63,53 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 }
 
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
-    for (int k = 0; k < this->count - 1; ++k) {
+    for (int k = 1; k < this->count + 1; ++k) {
         for (int s = 1; s <= this->weight; ++s) {
-            if (s >= thing_item.weight[k + 1]) {
-                if (
-                    this->answer[k][s].data * this->answer[k][s].num <=
-                    (this->answer[k][s - thing_item.weight[k + 1]].data + thing_item.cost[k + 1]) * (this->answer[k][s - thing_item.weight[k + 1]].num + 1)
-                    ) {
-                    this->answer[k + 1][s].data = this->answer[k][s - thing_item.weight[k + 1]].data + thing_item.cost[k + 1];
-                    this->answer[k + 1][s].num = this->answer[k][s - thing_item.weight[k + 1]].num + 1;
-                }
-                else {
-                    this->answer[k + 1][s].data = this->answer[k][s].data;
-                    this->answer[k + 1][s].num = this->answer[k][s].num;
-                }
+            this->total[k][s] = this->total[k - 1][s];
+            this->mask[k][s] = this->mask[k - 1][s];
+            if (thing_item.cost[k - 1] > this->total[k][s] && s - thing_item.weight[k - 1] == 0){
+                this->total[k][s] = thing_item.cost[k - 1];
+                std::fill(this->mask[k][s].begin(), this->mask[k][s].end(), 0);
+                this->mask[k][s][k - 1] = 1;
             }
-            else {
-                this->answer[k + 1][s].data = this->answer[k][s].data;
-                this->answer[k + 1][s].num = this->answer[k][s].num;
+            if (this->total[k][s] > this->answer){
+                this->answer = this->total[k][s];
+                this->take = this->mask[k][s];
             }
         }
     }
-}
-
-void TrickyBackpack::PrintState() {
-    for (int i = 0; i < this->answer.size(); ++i) {
-        for (int j = 0; j < this->answer[i].size(); ++j) {
-            std::cout << this->answer[i][j].data << " ";
+    for (int i = 2; i < this->count + 1; ++i){
+        for (int k = 1; k < this->count + 1; ++k) {
+            for (int s = 1; s <= this->weight; ++s) {
+                this->total_more[k][s] = this->total_more[k - 1][s];
+                this->mask_more[k][s] = this->mask_more[k - 1][s];
+                if (s - thing_item.weight[k - 1] > 0 && this->total[k - 1][s - thing_item.weight[k - 1]] > 0){
+                    if (i * (thing_item.cost[k - 1] + this->total[k - 1][s - thing_item.weight[k - 1]] / (i - 1)) > this->total_more[k][s]){
+                        this->total_more[k][s] = i * (thing_item.cost[k - 1] + this->total[k - 1][s - thing_item.weight[k - 1]] / (i - 1));
+                        this->mask_more[k][s] = this->mask[k - 1][s - thing_item.weight[k - 1]];
+                        this->mask_more[k][s][k - 1] = 1;
+                    }
+                }
+                if (this->total_more[k][s] > this->answer){
+                    this->answer = this->total_more[k][s];
+                    this->take = this->mask_more[k][s];
+                }
+            }
         }
-        std::cout << std::endl;
+        std::swap(this->total_more, this->total);
+        std::swap(this->mask_more, this->mask);
     }
 }
 
-void TrickyBackpack::FindPath(int count, int weight, struct thing& thing_item, std::vector<int>& answer_path) {
-    if (this->answer[count][weight].data == 0)
-        return;
-    if (this->answer[count - 1][weight].data == this->answer[count][weight].data)
-        FindPath(count - 1, weight, thing_item, answer_path);
-    else {
-        FindPath(count - 1, weight - thing_item.weight[count], thing_item, answer_path);
-        answer_path.push_back(count);
-    }
-}
+void TrickyBackpack::PrintResponse() {
+    std::cout << this->answer << std::endl;
 
-void TrickyBackpack::PrintResponse(std::vector<int>& answer_path) {
-    unsigned long answer_size = this->answer.size();
-    unsigned long answer_path_size = answer_path.size();
-
-    std::cout << this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].data * this->answer[answer_size - 1][this->answer[answer_size - 1].size() - 1].num << std::endl;
-
-    if (answer_path_size > 0) {
-        for (int i = 0; i < answer_path_size - 1; i++) {
-            std::cout << answer_path[i] << " ";
+    for (int i = 0; i < this->count; ++i) {
+        if (this->take[i]){
+            std::cout << i + 1 << " ";
         }
-        std::cout << answer_path[answer_path_size - 1] << std::endl;
     }
+    std::cout << std::endl;
 }
 
 int main() {
@@ -121,11 +124,6 @@ int main() {
     bag.GenerateMatrix(thing_item);
 
 
-    std::vector<int> answer_path;
-    bag.FindPath(count, weight, thing_item, answer_path);
-    
-    bag.PrintState();
-    
-    bag.PrintResponse(answer_path);
+    bag.PrintResponse();
     return 0;
 }
