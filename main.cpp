@@ -34,7 +34,7 @@ private:
     int answer;
 };
 
-TrickyBackpack::TrickyBackpack(int& count, int& weight) : take(MAX_COUNT, false) {
+TrickyBackpack::TrickyBackpack(int& count, int& weight) : take(MAX_COUNT, false), answer(0) {
     this->count = count;
     this->weight = weight;
 
@@ -46,8 +46,6 @@ TrickyBackpack::TrickyBackpack(int& count, int& weight) : take(MAX_COUNT, false)
     tmp_vector_bool.resize(this->weight + 1, this->take);
     this->mask.resize(this->count + 1, tmp_vector_bool);
     this->mask_more.resize(this->count + 1, tmp_vector_bool);
-
-    this->answer = 0;
 }
 
 void TrickyBackpack::PutData(struct thing& thing_item) {
@@ -69,7 +67,7 @@ void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
             this->mask[k][s] = this->mask[k - 1][s];
             if (thing_item.cost[k - 1] > this->total[k][s] && s - thing_item.weight[k - 1] == 0){
                 this->total[k][s] = thing_item.cost[k - 1];
-                std::fill(this->mask[k][s].begin(), this->mask[k][s].end(), 0);
+                memset(&this->mask[k][s], 0, MAX_COUNT);
                 this->mask[k][s][k - 1] = 1;
             }
             if (this->total[k][s] > this->answer){
