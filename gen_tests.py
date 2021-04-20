@@ -1,7 +1,7 @@
 from random import *
 
 
-NUMBERS_LINES = 100
+NUMBERS_LINES = 5
 
 with open('tests', 'w') as f:
     f.write(f'{choice(range(NUMBERS_LINES))} {choice(range(5000))}\n')
