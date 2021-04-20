@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <bitset>
 
 
 struct thing {
@@ -7,7 +8,7 @@ struct thing {
     std::vector<int> cost;
 };
 
-static const int MAX_COUNT = 100;
+static const int MAX_COUNT = 127;
 
 class TrickyBackpack {
 public:
@@ -24,28 +25,14 @@ private:
     int weight;
     int count;
 
-    std::vector<std::vector<int> > total;
-    std::vector<std::vector<int> > total_more;
-
-    std::vector<std::vector<std::vector<bool> > > mask;
-    std::vector<std::vector<std::vector<bool> > > mask_more;
-
-    std::vector<bool> take;
+    std::bitset<MAX_COUNT> take;
     int answer;
 };
 
-TrickyBackpack::TrickyBackpack(int& count, int& weight) : take(MAX_COUNT, false), answer(0) {
+TrickyBackpack::TrickyBackpack(int& count, int& weight)
+: answer(0) {
     this->count = count;
     this->weight = weight;
-
-    std::vector<int> tmp(this->weight + 1);
-    this->total.resize(this->count + 1, tmp);
-    this->total_more.resize(this->count + 1, tmp);
-
-    std::vector< std::vector<bool> > tmp_vector_bool;
-    tmp_vector_bool.resize(this->weight + 1, this->take);
-    this->mask.resize(this->count + 1, tmp_vector_bool);
-    this->mask_more.resize(this->count + 1, tmp_vector_bool);
 }
 
 void TrickyBackpack::PutData(struct thing& thing_item) {
@@ -61,41 +48,44 @@ void TrickyBackpack::PutData(struct thing& thing_item) {
 }
 
 void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
+    std::vector<std::vector<int> > total(this->count + 1, std::vector<int> (this->weight + 1));
+    std::vector<std::vector<int> > total_more(this->count + 1, std::vector<int> (this->weight + 1));
+    std::vector<std::vector<std::bitset<MAX_COUNT> > > mask(this->count + 1, std::vector<std::bitset<MAX_COUNT> > (this->weight + 1));
+    std::vector<std::vector<std::bitset<MAX_COUNT> > > mask_more(this->count + 1, std::vector<std::bitset<MAX_COUNT> > (this->weight + 1));
     for (int k = 1; k < this->count + 1; ++k) {
         for (int s = 1; s <= this->weight; ++s) {
-            this->total[k][s] = this->total[k - 1][s];
-            this->mask[k][s] = this->mask[k - 1][s];
-            if (thing_item.cost[k - 1] > this->total[k][s] && s - thing_item.weight[k - 1] == 0){
-                this->total[k][s] = thing_item.cost[k - 1];
-                memset(&this->mask[k][s], 0, MAX_COUNT);
-                this->mask[k][s][k - 1] = 1;
+            total[k][s] = total[k - 1][s];
+            mask[k][s] = mask[k - 1][s];
+            if (thing_item.cost[k - 1] > total[k][s] && s - thing_item.weight[k - 1] == 0){
+                total[k][s] = thing_item.cost[k - 1];
+                mask[k][s] = 0;
+                mask[k][s][k - 1] = 1;
             }
-            if (this->total[k][s] > this->answer){
-                this->answer = this->total[k][s];
-                this->take = this->mask[k][s];
+            if (total[k][s] > this->answer){
+                this->answer = total[k][s];
+                this->take = mask[k][s];
             }
         }
     }
     for (int i = 2; i < this->count + 1; ++i){
         for (int k = 1; k < this->count + 1; ++k) {
             for (int s = 1; s <= this->weight; ++s) {
-                this->total_more[k][s] = this->total_more[k - 1][s];
-                this->mask_more[k][s] = this->mask_more[k - 1][s];
-                if (s - thing_item.weight[k - 1] > 0 && this->total[k - 1][s - thing_item.weight[k - 1]] > 0){
-                    if (i * (thing_item.cost[k - 1] + this->total[k - 1][s - thing_item.weight[k - 1]] / (i - 1)) > this->total_more[k][s]){
-                        this->total_more[k][s] = i * (thing_item.cost[k - 1] + this->total[k - 1][s - thing_item.weight[k - 1]] / (i - 1));
-                        this->mask_more[k][s] = this->mask[k - 1][s - thing_item.weight[k - 1]];
-                        this->mask_more[k][s][k - 1] = 1;
-                    }
+                total_more[k][s] = total_more[k - 1][s];
+                mask_more[k][s] = mask_more[k - 1][s];
+                if ((s - thing_item.weight[k - 1] > 0 && total[k - 1][s - thing_item.weight[k - 1]] > 0) &&
+                (i * (thing_item.cost[k - 1] + total[k - 1][s - thing_item.weight[k - 1]] / (i - 1)) > total_more[k][s])){
+                    total_more[k][s] = i * (thing_item.cost[k - 1] + total[k - 1][s - thing_item.weight[k - 1]] / (i - 1));
+                    mask_more[k][s] = mask[k - 1][s - thing_item.weight[k - 1]];
+                    mask_more[k][s][k - 1] = 1;
                 }
-                if (this->total_more[k][s] > this->answer){
-                    this->answer = this->total_more[k][s];
-                    this->take = this->mask_more[k][s];
+                if (total_more[k][s] > this->answer){
+                    this->answer = total_more[k][s];
+                    this->take = mask_more[k][s];
                 }
             }
         }
-        std::swap(this->total_more, this->total);
-        std::swap(this->mask_more, this->mask);
+        std::swap(total_more, total);
+        std::swap(mask_more, mask);
     }
 }
 
@@ -120,8 +110,7 @@ int main() {
     struct thing thing_item;
     bag.PutData(thing_item);
     bag.GenerateMatrix(thing_item);
-
-
     bag.PrintResponse();
+
     return 0;
 }
