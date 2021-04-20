@@ -44,7 +44,7 @@ TrickyBackpack::TrickyBackpack(int& count, int& weight) {
 void TrickyBackpack::PutData(std::vector<Item>& pairs) {
     Item item;
     for (int i = 0; i < this->count; ++i) {
-        std::cin >> item.weight >> item.cost;
+        std::cin >> item.cost >> item.weight;
         pairs.push_back(item);
     }
 }
@@ -71,7 +71,7 @@ void TrickyBackpack::GenerateMatrix(std::vector<Item>& pairs) {
 
 void TrickyBackpack::PrintResponse() {
     std::cout << this->answer << std::endl;
-    
+
     std::cout << std::endl;
 }
 
