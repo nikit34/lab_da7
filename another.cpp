@@ -3,22 +3,29 @@
 #include <chrono>
 
 
-struct thing {
-    std::vector<int> weight;
-    std::vector<int> cost;
+struct Item {
+    int weight;
+    int cost;
 };
 
-static const int MAX_COUNT = 127;
+Item operator+ (const Item &lhs, const Item &rhs) {
+    return { lhs.weight + rhs.weight, lhs.cost + rhs.cost };
+}
+
+Item& operator+= (Item &lhs, const Item &rhs) {
+    lhs.weight += rhs.weight;
+    lhs.cost += rhs.cost;
+    return lhs;
+}
 
 class TrickyBackpack {
 public:
     TrickyBackpack(int& count, int& weight);
     ~TrickyBackpack() {}
 
-    void PutData(struct thing& thing_item);
-    void GenerateMatrix(struct thing& thing_item);
-    void PartialSums(int& i, struct thing& thing_item, int& i_s, std::vector<int>& solution);
-
+    void PutData(std::vector<Item>& pairs);
+    void GenerateMatrix(std::vector<Item>& pairs);
+    void partialSums(int index, Item item, std::vector<Item> &items, Item &solution);
     void PrintResponse();
 
 private:
@@ -26,68 +33,45 @@ private:
     int weight;
     int count;
 
-    std::vector<bool> take;
-
     int answer;
 };
 
-TrickyBackpack::TrickyBackpack(int& count, int& weight)
-: answer(0), take(count, false) {
+TrickyBackpack::TrickyBackpack(int& count, int& weight) {
     this->count = count;
     this->weight = weight;
 }
 
-void TrickyBackpack::PutData(struct thing& thing_item) {
-    int one_weight;
-    int one_cost;
-
+void TrickyBackpack::PutData(std::vector<Item>& pairs) {
+    Item item;
     for (int i = 0; i < this->count; ++i) {
-        std::cin >> one_weight >> one_cost;
-
-        thing_item.weight.push_back(one_weight);
-        thing_item.cost.push_back(one_cost);
+        std::cin >> item.weight >> item.cost;
+        pairs.push_back(item);
     }
 }
 
-void TrickyBackpack::PartialSums(int& i, struct thing& thing_item, int& i_s, std::vector<int>& solution) {
-    for (int k = 1; k < this->count; ++k) {
-        if (i < this->count - 1){
-            if (thing_item.weight[i] * k <= this->weight && thing_item.cost[i] * k > this->answer) {
-                thing_item.cost[i + 1] = thing_item.cost[i] * k;
-                thing_item.weight[i + 1] = thing_item.weight[i] * k;
-                this->answer = thing_item.cost[i + 1];
-            }
-            i = i + 1;
-            this->PartialSums(i, thing_item, i_s, solution);
-        } else {
-            solution[i_s + 1] = solution[i_s] + this->answer;
-            this->take[i] = true;
-            ++i_s;
-            if (i_s < this->count - 1) {
-                i = 0;
-                this->PartialSums(i, thing_item, i_s, solution);
-            } else {
-                while (thing_item.weight[i_s] > this->weight)
-                    --i_s;
-                this->answer = solution[i_s];
-            }
+void TrickyBackpack::partialSums(int index, Item item, std::vector<Item> &items, Item &solution) {
+    if (index == items.size()) {
+        if (item.weight <= this->weight && item.cost > solution.cost) {
+            solution = item;
         }
     }
+    else {
+        this->partialSums(index + 1, item, items, solution);
+        item += items[index];
+        this->partialSums(index + 1, item, items, solution);
+    }
 }
 
-void TrickyBackpack::GenerateMatrix(struct thing& thing_item) {
-    int index = 0;
-    this->PartialSums(index, thing_item, index, thing_item.cost);
-
+void TrickyBackpack::GenerateMatrix(std::vector<Item>& pairs) {
+    Item item {0,0};
+    Item solution {0,0};
+    this->partialSums(0, item, pairs, solution);
+    this->answer = solution.cost;
 }
 
 void TrickyBackpack::PrintResponse() {
     std::cout << this->answer << std::endl;
-    for(int i = 0; i < this->count; ++i){
-        if(this->take[i]){
-            std::cout << i << " ";
-        }
-    }
+    
     std::cout << std::endl;
 }
 
@@ -100,9 +84,9 @@ int main() {
     std::cin >> count >> weight;
     TrickyBackpack bag(count, weight);
 
-    struct thing thing_item;
-    bag.PutData(thing_item);
-    bag.GenerateMatrix(thing_item);
+    std::vector<Item> pairs;
+    bag.PutData(pairs);
+    bag.GenerateMatrix(pairs);
     bag.PrintResponse();
 
     auto stop = std::chrono::high_resolution_clock::now();
