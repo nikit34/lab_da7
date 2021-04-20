@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <bitset>
+#include <chrono>
 
 
 struct thing {
@@ -101,6 +102,8 @@ void TrickyBackpack::PrintResponse() {
 }
 
 int main() {
+    auto start = std::chrono::high_resolution_clock::now();
+
     int count;
     int weight;
 
@@ -111,6 +114,10 @@ int main() {
     bag.PutData(thing_item);
     bag.GenerateMatrix(thing_item);
     bag.PrintResponse();
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << duration.count() << std::endl;
 
     return 0;
 }
